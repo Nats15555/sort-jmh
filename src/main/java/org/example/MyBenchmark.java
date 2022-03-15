@@ -25,13 +25,57 @@
 
 package org.example;
 
-import org.openjdk.jmh.annotations.Benchmark;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
 
+import org.openjdk.jmh.annotations.Benchmark;
+import org.openjdk.jmh.annotations.Fork;
+import org.openjdk.jmh.annotations.Scope;
+import org.openjdk.jmh.annotations.State;
+import org.openjdk.jmh.annotations.Warmup;
+import org.openjdk.jmh.infra.Blackhole;
+
+
+@Fork(value = 1)
+@Warmup(iterations = 3)
+@State(Scope.Benchmark)
 public class MyBenchmark {
 
-    @Benchmark
-    public void testMethod() {
-        // place your benchmarked code here
+    private final int size = 600000;
+    private static float[] temperatures;
+    public static final float LEFT_LIMIT = -272F;
+    public static final float RIGHT_LIMIT = 499;
+
+    public SortTemperatures setup() {
+        temperatures = new float[size];
+        float generatedFloat;
+        int randomNum;
+        for (int i = 0; i < temperatures.length; i++) {
+            generatedFloat = (float) Math.ceil(LEFT_LIMIT + new Random().nextFloat() * (RIGHT_LIMIT - LEFT_LIMIT));
+            randomNum = (int) (Math.random() * 9);
+            temperatures[i] = (float) (generatedFloat + (randomNum / 10.));
+        }
+        return new SortTemperatures(temperatures);
     }
+
+    @Benchmark
+    public void sortTemperaturesCollectionSort(Blackhole bh) {
+        List<Float> result = setup().sortTemperaturesCollectionSort();
+        bh.consume(result);
+    }
+
+    @Benchmark
+    public void mySortTemperatures(Blackhole bh) {
+        List<Float> result = setup().mySortTemperatures();
+        bh.consume(result);
+    }
+
+    @Benchmark
+    public void sortTemperaturesBobbleSort(Blackhole bh) {
+        List<Float> result = setup().sortTemperaturesBobbleSort();
+        bh.consume(result);
+    }
+
 
 }
